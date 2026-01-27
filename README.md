@@ -1,104 +1,71 @@
-# Quantum Computing Benchmarking with LR-QAOA: Evaluating the performance of quantum processing units at large width and depth
-Paper:https://arxiv.org/abs/2502.06471
+# LABS on LR-QAOA Benchmarking
 
-## Overview
-Currently, we are in a stage where quantum computers surpass the size that can be simulated exactly on classical computers, and noise is the central issue in extracting their full potential. Effective ways to characterize and measure their progress for practical applications are needed.
+This repository applies **Linear-Ramp QAOA (LR-QAOA)** to the **Low Autocorrelation Binary Sequence (LABS)** problem, with the goal of enabling **reproducible benchmarking** across:
 
-In this work, we use the **Linear Ramp Quantum Approximate Optimization Algorithm (LR-QAOA)** [[1]](https://arxiv.org/abs/2405.09169) protocol, a fixed **Quantum Approximate Optimization Algorithm (QAOA)** protocol, as an easy-to-implement, scalable benchmarking methodology. This approach assesses **Quantum Processing Units (QPUs)** at different **widths (number of qubits)** and **2-qubit gate depths**. 
-![Description](paper-layouts-tested.png)
+- LR-QAOA schedules
+- LABS-trained QAOA schedules (e.g., Shaydulin-style schedules)
+- classical heuristics
 
-Scheme of the Quantum Processing Units (QPUs) benchmarking. (a) Graphs used for the benchmarking. In yellow is the 1D-Chain, in green is the native layout (NL), and in pink is the fully connected (FC) graph. (b) QAOA protocol consists of alternating layers of the problem Hamiltonian and the mixer Hamiltonian. $p$ represents the depth of the algorithm. (c) Schedule of the LR-QAOA algorithm, $\Delta_{\gamma, \beta}/p$ is the slope. (d) Expected results of LR-QAOA in terms of approximation ratio versus number of LR-QAOA layers. Black curves represent different levels of depolarizing noise strength.
-
-
-The benchmarking identifies the depth at which a **fully mixed state** is reached, meaning results become indistinguishable from those of a random sampler.
-
-### **Tested Systems & Vendors**
-We evaluate this methodology using **three graph topologies**:
-- **1D-chain**
-- **Native Layout (NL)**
-- **Fully Connected (FC)**  
-
-These experiments were conducted on **28 QPUs** from **7 vendors**:  
-✅ AQT  
-✅ IBM  
-✅ IQM  
-✅ IonQ  
-✅ Quantinuum  
-✅ Rigetti  
-✅ OriginQ 
-
-
-### **Key Findings**
-- The largest problem tested: **1D-chain with \( p = 10,000 \)** involving **990,000 2-qubit gates on `ibm_fez`**.
-- **`ibm_fez` performs best** for **1D-chain & native layout**, retaining coherence at **\( p=200 \)** with **35,200 fractional 2-qubit gates**.
-- **`quantinuum_H2-1` performs best** for **fully connected graphs**, successfully passing the test at **\( N_q=56 \) qubits, \( p=3 \) (4,620 2-qubit gates)**.
+It is also intended to support turning LABS + these approaches into a **Metriq Task** so algorithm developers and hardware teams can compare methods in a consistent format.
 
 ---
 
-## 📂 **Repository Structure**
+## Background
 
-```
-LR-QAOA-QPU-Benchmarking/
-├── 1D-Chain-Experiments.ipynb   # Experimental results for 1D-chain topology
-├── 1D-Chain-Figures.ipynb       # Visualizations and analysis for 1D-chain topology
-├── 1D-Chain-Origin-Quantum.ipynb # 1D-chain experiments on Origin Quantum QPU
-├── FC-Experiments.ipynb         # Experimental results for fully connected graphs
-├── FC-Figures.ipynb             # Figures and visualizations for FC experiments
-├── NL-Experiments.ipynb         # Experimental results for native layout graphs
-├── NL-Figures.ipynb             # Visualizations and analysis for native layout graphs
-├── Figures_sampling.ipynb       # Sampling-related figures and analysis
-├── generate_problems.ipynb      # Generate random graphs for FC, NL, and 1D-Chain experiments
-├── LR-QAOA-Benchmark.md         # Detailed benchmark protocol documentation
-├── paper-layouts-tested.png     # Diagram of QPU benchmarking layouts
-├── requirements.txt             # Required Python libraries
-├── LICENSE                      # License file
-├── README.md                    # This file
-├── Data/                        # Experimental data and results
-│   ├── problems_1DChain.json    # 1D-Chain problem definitions
-│   ├── NL-problems.npy          # Native layout problem definitions
-│   ├── WMC_FC.npy               # Fully connected problem data
-│   ├── qpu_benchmark_results.xlsx # Benchmark results summary
-│   ├── ibm_fez/                 # IBM QPU experiment data (also: ibm_torino, ibm_brisbane, etc.)
-│   ├── iqm_garnet/              # IQM QPU experiment data (also: iqm_spark, iqm_sirius, etc.)
-│   ├── ionq_aria_2/             # IonQ QPU experiment data (also: ionq_forte, etc.)
-│   ├── rigetti_ankaa_2/         # Rigetti QPU experiment data (also: rigetti_ankaa_3)
-│   ├── H1-1/                    # Quantinuum H1-1 experiment data (also: H2-1, H1-1E, H2-1E)
-│   ├── aqt_ibexq1/              # AQT QPU experiment data
-│   └── originq_wukong/          # OriginQ QPU experiment data
-└── Figures/                     # Generated figures and plots
-    ├── 1D-Chain/                # 1D-chain topology figures
-    ├── FC/                      # Fully connected graph figures
-    ├── NL/                      # Native layout figures
-    └── sampling/                # Sampling analysis figures
-```
+This project tests a strong quantum-advantage candidate—the **LABS** problem—where QAOA has shown evidence consistent with favorable scaling behavior in prior work. The approach here is to evaluate LABS using **scalable LR-QAOA** and to structure the workflow so results are straightforward to reproduce and extend.
+
+Relevant reading:
+- LABS as a quantum-advantage candidate: `arXiv:2504.03832`, `arXiv:2308.02342`
+- LR-QAOA as a scalable protocol: (see Alejandro Montañez Barrera’s LR-QAOA work)
+- LABS-trained QAOA schedules: (see Shaydulin’s LABS schedule work)
 
 ---
 
-## 📑 **Table of Contents**
-### **1D-Chain Experiments**
-- [1D-Chain-Experiments.ipynb](./1D-Chain-Experiments.ipynb) - Experimental results for 1D-chain topology.
-- [1D-Chain-Figures.ipynb](./1D-Chain-Figures.ipynb) - Visualizations and analysis for 1D-chain topology.
-- [1D-Chain-Origin-Quantum.ipynb](./1D-Chain-Origin-Quantum.ipynb) - 1D-chain experiments on Origin Quantum QPU.
+## Repository structure
 
-### **Fully Connected (FC) Experiments**
-- [FC-Experiments.ipynb](./FC-Experiments.ipynb) - Experimental results for fully connected graphs.
-- [FC-Figures.ipynb](./FC-Figures.ipynb) - Figures and visualizations for fully connected experiments.
+Top-level layout:
 
-### **Native Layout (NL) Experiments**
-- [NL-Experiments.ipynb](./NL-Experiments.ipynb) - Experimental results for native layout graphs.
-- [NL-Figures.ipynb](./NL-Figures.ipynb) - Visualizations and analysis for native layout graphs.
+- `Data/`  
+  Input instances and cached outputs used by figure notebooks.
+- `Figures/`  
+  Generated figures (exported plots).
 
-### **Additional Notebooks**
-- [generate_problems.ipynb](./generate_problems.ipynb) - Generate the random graphs used for the FC, NL, and 1D-Chain experiments.
-- [Figures_sampling.ipynb](./Figures_sampling.ipynb) - Sampling-related figures and analysis.
-  
-### **Dependencies**
-- [requirements.txt](./requirements.txt) - Required Python libraries for running the notebooks.
+### LABS-focused notebooks
+
+- `generate_problems_LABS.ipynb`  
+  Generates / collects LABS problem instances and related inputs.
+- `1D-Chain-Experiments_LABS.ipynb`  
+  Runs LABS experiments in the 1D-chain setting.
+- `1D-Chain-Experiments_LABS_LR-QAOA.ipynb`  
+  Runs LABS experiments using LR-QAOA schedules.
+- `1D-Chain-Figures_LABS.ipynb`  
+  Produces the LABS figures from saved results (and optionally saves them under `Figures/`).
+
+### Other notebooks (broader benchmarking)
+
+The repo also includes non-LABS-specific experiment/figure notebooks (e.g., `1D-Chain-*`, `FC-*`, `NL-*`) that support the broader LR-QAOA benchmarking workflow.
+
+### Utilities
+
+- `get_objective.py`  
+  Objective / scoring utilities used by notebooks.
+- `LR-QAOA-Benchmark.md`  
+  Notes and background on the LR-QAOA benchmarking protocol.
+- `requirements.txt`  
+  Python dependencies.
 
 ---
 
-## 🚀 **Getting Started**
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/alejomonbar/LR-QAOA-QPU-Benchmarking.git
+## Quickstart
+
+### 1) Clone and install dependencies
+
+```bash
+git clone https://github.com/makansij/LABS_on_LR-QAOA_Benchmarking.git
+cd LABS_on_LR-QAOA_Benchmarking
+
+python -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
 
